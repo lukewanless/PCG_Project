@@ -9,9 +9,13 @@ var maxrooms = 15;
 var minrooms = 7;
 var bossl;
 var rooms = [];
-var mission = "Start Room Room Room Enemy Room Key Room Room Room Room Lock Room Enemy Room Room Key Enemy Room Lock Room Room Key Lock Room Key Lock Room Room Key Room Room Room Lock End";
+var levels = [];
+var numLevels = 0;
+//var mission = "Start Room Room Room Enemy Room Key Room Room Room Room Lock Room Enemy Room Room Key Enemy Room Lock Room Room Key Lock Room Key Lock Room Room Key Room Room Room Lock End";
+var mission = "Start Room Room Enemy Level Room Key Room Room Level Room Room Lock End";
+var numRooms;
+var rowSize;
 
-//class to define the room type from string 
 class Room {
   constructor(roomString) {
     this.roomString = roomString;
@@ -24,7 +28,8 @@ class Room {
     else if (this.roomString == "Key") {return color(0,0,255)}
     else if (this.roomString == "Lock") {return color(255,0,0)}
     else if (this.roomString == "End") {return color(255,255,0)}
-    else {return color(255,0,0)};
+    else if (this.roomString == "Enemy") {return color(0,255,255)}
+    else if (this.roomString == "Level") {return color(255,0,255)};
     }
   }
 
@@ -34,19 +39,40 @@ function preload() {
 }
 
 function setup() {
-  createCanvas(400, 400);
+  createCanvas(300, 300);
   background(220);
+  structure = mission.split(' ');
+  numLevels = countLevels(structure);
+  print(numLevels);
+  numRooms = structure.length;
+  
+  //create separate structures split at the different levels and append to levels array
+  var j = 0; 
+  for (var i = 0; i < numLevels; i++) {
+    var level = [];
+    if (!(i == 0)) {
+      level[0] =  "Level";
+    }
+    while (!( (structure[j] == "Level") || (structure[j] == "End"))) {
+      append(level, structure[j]);
+      j++;
+    }
+    append(level, structure[j]);
+    append(levels,level);
+    j++;
+    print(levels); 
+  } 
   startText = "Click to generate level";
 }
 
 function draw() {
-  textSize(18);
+  textSize(14);
   if (!started) {
     textFont(font);
-    text(startText, 30, 200);
+    text(startText, 20, 150);
   }
   if (started) {
-    if (cellQueue.length > 0) {
+    if (cellQueue.length > 0 && floorplanCount < structure.length) {
       var i = cellQueue.shift();
       var x = i % 10;
       var created  = false;
@@ -54,23 +80,25 @@ function draw() {
       if (x > 1) {
         created = created | visit(i - 1);
       }
-      if (x < 9) {
+      if (x < 9) { 
         created = created | visit(i + 1);
       }
-      if (i > 20) {
-        created = created | visit(i - 10);
+      if (i > 20) { 
+        created = created | visit(i - 10); 
       }
-      if (i < 70) {
-        created = created | visit(i + 10);
+      if (i < numRooms - 70) { 
+        created = created | visit(i + 10);  
       }
+      if (!created) {
+        start();
+      } 
     }
-     for (var j = 0; j < structure.length; j++) {
-      if (rooms[j].used) {
-        print(rooms[j].roomString);
-        fill(rooms[j].colour());
-        rect(30*(rooms[j].floorplanIndex % 10), 30*floor((rooms[j].floorplanIndex/10)), 30, 30);
+      for (var j = 0; j < structure.length; j++) {
+        if (rooms[j].used) {
+          fill(rooms[j].colour());
+          rect(30*(rooms[j].floorplanIndex % 10), 30*floor((rooms[j].floorplanIndex/10)), 30, 30); 
+        }
       }
-    } 
   }
 }
 
@@ -81,7 +109,6 @@ function mouseClicked() {
 
 function start() {
   background(220);
-  structure = mission.split(' ');
   started = true;
   startText = "";
   images = [];
@@ -95,8 +122,7 @@ function start() {
   floorplanCount = 0;
   cellQueue = [];
   endrooms = [];
-  // Our grid is one row lower than isaacs as referencing negative indices isn't a good idea in JS
-  visit(45);
+  visit(45)
 }
 
 function visit(i) {
@@ -106,7 +132,7 @@ function visit(i) {
 
     var neighbours = ncount(i);
 
-    if (neighbours > 1) {
+    if (neighbours > 1) { 
       return false;
     }
 
@@ -114,7 +140,7 @@ function visit(i) {
       return false;
     }
     
-    if (Math.random() < 0.5 && i != 45) {
+    if (Math.random() < 0.40 && i != 45) {//<0.5
         return false;
     }
     cellQueue.push(i);
@@ -128,4 +154,16 @@ function visit(i) {
 
 function ncount(i) {
   return floorplan[i-10] + floorplan[i-1] + floorplan[i+1] + floorplan[i+10];
+}
+
+function countLevels(structure) {
+  var levels = 0;
+  for (var i = 0; i < structure.length; i++) {
+    if (structure[i] == "Level") {
+      levels++;
+    }
+  }
+  //levels = number of dividers + 1
+  levels++;
+  return levels;
 }
