@@ -3,7 +3,6 @@ var started;
 var images = [];
 var floorplanCount = []; // a global 2D array to store the floorplancount of each level 
 var cellQueue;
-//var cells; //temp array used in initialising the cellQueue array 
 var endrooms;
 var maxrooms = 15;
 var minrooms = 7;
@@ -44,7 +43,7 @@ function preload() {
 }
 
 function setup() {
-  frameRate(10);
+  //frameRate(1);
   createCanvas(1500, 300);
   background(220);
   structure = mission.split(' ');
@@ -52,24 +51,19 @@ function setup() {
   numRooms = structure.length;
 
   //create separate structures split at the different levels and append to levels array
-  var j = 0; 
-  for (var i = 0; i < numLevels; i++) {
-    var level = [];
-    if (!(i == 0)) {
-      level[0] =  "Level";
+  var start = 0; 
+  var count = 0; 
+  for (var j = 0; j < structure.length; j++) {
+    if (structure[j] == "Level") {
+      levels[count] = structure.slice(start, j+1);
+      start = j; 
+      count++;
     }
-    while (!( (structure[j] == "Level") || (structure[j] == "End"))) {
-      append(level, structure[j]);
-      j++;
+    else if (structure[j] == "End") {
+      levels[count] = structure.slice(start, j+1);
     }
-    append(level, structure[j]);
-    append(levels,level);
-    j++; 
-  } 
-  //remove the last null value from the last of each list
-  for (var i = 0; i < numLevels; i++) {
-    var k = levels[i].length;
   }
+  print(levels);
   startText = "Click to generate level";
 }
 
@@ -80,8 +74,11 @@ function draw() {
     text(startText, 20, 150);
   }
   if (started) {
-    if (levelCounter < levels.length && cellQueue.length > 0 && floorplanCount[levelCounter] < levels[levelCounter].length) {
+    if (levelCounter < levels.length && floorplanCount[levelCounter] < levels[levelCounter].length) { //cellQueue.length > 0
       var i = cellQueue.shift();
+      if (levelCounter == 1) {
+        print("Now im pushing cell i =",i);
+      }
       var x = i % 10;
       var created  = false;
 
@@ -101,44 +98,14 @@ function draw() {
         start();
       } 
     }
-    if (allRooms[levelCounter][floorplanCount[levelCounter]-1].roomString == "Level") {
-      print("Level", levelCounter);
+    // must also ensure it isnt placed before one of its previous cells so we dont get gaps in levels 
+    else if (allRooms[levelCounter][floorplanCount[levelCounter]-1].roomString == "Level") { //else if 
       levelCounter++;
-      cellQueue.push(allRooms[levelCounter-1][floorplanCount[levelCounter-1]]);
-      //visit(allRooms[levelCounter-1][floorplanCount[levelCounter-1]]);
+      //print(allRooms[levelCounter-1][floorplanCount[levelCounter-1]].floorplanIndex)
+      visit(allRooms[levelCounter-1][floorplanCount[levelCounter-1]-1].floorplanIndex); //SHOULDNT BE -1 (AT VERY END)!!!
+      print("We are calling visit on cell", allRooms[levelCounter-1][floorplanCount[levelCounter-1]-1].floorplanIndex);
     }
-
-    //draw the grid 
-    //draw one for each level
-    for (var i = 0; i < numLevels; i++) {
-      var startWidth = 350*i;
-      var endWidth =  startWidth + 300;
-      var height = 300; 
-      for (var x = startWidth; x <= endWidth ; x += 30) {
-        for (var y = 0; y <= 300; y += 30) {
-          stroke(0);
-          strokeWeight(1);
-          line(x, 0, x, height);
-          line(startWidth, y, endWidth, y);
-        }
-      }
-    } 
-
-    // want to print the all rooms array which will print each level 
-    for (var i = 0; i < allRooms.length; i++) {
-      for (var j = 0; j < allRooms[i].length; j++) {
-        if (allRooms[i][j].used ==1) { //see if binary works instead of true false for used 
-          fill(allRooms[i][j].colour());
-          //if its the first level ignore the front spacing 
-          if (i == 0) {
-            rect(30*(allRooms[i][j].floorplanIndex % 10), 30*floor((allRooms[i][j].floorplanIndex/10)), 30, 30);
-          }
-          else {
-            rect(350*i + 30*(allRooms[i][j].floorplanIndex % 10), 30*floor((allRooms[i][j].floorplanIndex/10)), 30, 30); 
-          }
-        }
-      }
-    }
+    printRooms();
   }
 }
 
@@ -157,11 +124,6 @@ function start() {
   floorplanCount = [];
   cellQueue = []; 
   levelCounter = 0;
-  //2D cellQueue initialisation 
-  for (var i = 0; i < numLevels; i++) {
-    cellQueue[i] = [];
-  }
-  //print(cellQueue); 
   //2D floorplan array initialisation
   for (var i = 0; i < numLevels; i++) {
     floors = [];
@@ -169,23 +131,17 @@ function start() {
       floors[j] = 0;
     }
     floorplan[i] = floors; 
-  }
-  //need an array to store the rooms arrays for each level
-  for (var i = 0; i < numLevels; i++) {
+
     rooms = [];
-    for (var j = 0; j <= levels[i].length; j++){ //i <= structure.length
+    for (var j = 0; j < levels[i].length; j++){ 
       rooms[j] = new Room(levels[i][j]);
     }
-    // initialise an array of 100 rooms for each level and append to global array 
     allRooms[i] = rooms;
+
+    floorplanCount[i] = 0; 
   }
-  print(allRooms);
-  // initialise floorplancount array 
-  for (var i = 0; i < numLevels; i++) {
-    floorplanCount[i] = 0;  
-  }
-  cellQueue = []; //not used yet 
-  visit(45); //visit is now passed an index pointing to the rooms array 
+  cellQueue = [];
+  visit(45); 
 }
 
 function visit(i) {
@@ -193,35 +149,25 @@ function visit(i) {
   if (floorplan[levelCounter][i]) {
     return false;
   }
-
-  var neighbours = ncount(levelCounter, i); //fix ncount to take in a specific level 
-
+  var neighbours = ncount(levelCounter, i); 
   if (neighbours > 1) { 
     return false;
   }
-
   if (floorplanCount[levelCounter] >= levels[levelCounter].length) {
     return false;
   }
-    
   if (Math.random() < 0.40 && i != 45) {//<0.5
       return false;
   }
+  print("Level",levelCounter, "pushing cell", i);
+  cellQueue.push(i);
+  floorplanCount[levelCounter] += 1;
+  allRooms[levelCounter][floorplanCount[levelCounter]-1].used = 1;
+  allRooms[levelCounter][floorplanCount[levelCounter]-1].floorplanIndex = i;
+  floorplan[levelCounter][i] = 1;
+  //floorplanCount[levelCounter] += 1;
+  print(allRooms);
 
-  if (allRooms[levelCounter][floorplanCount[levelCounter]].roomString == "Level") {
-    cellQueue.push(i);
-    allRooms[levelCounter][floorplanCount[levelCounter]].used = 1;
-    allRooms[levelCounter][floorplanCount[levelCounter]].floorplanIndex = i;
-    floorplan[levelCounter][i] = 1;
-    floorplanCount[levelCounter] += 1;
-  }
-  else {
-    cellQueue.push(i);
-    allRooms[levelCounter][floorplanCount[levelCounter]].used = 1;
-    allRooms[levelCounter][floorplanCount[levelCounter]].floorplanIndex = i;
-    floorplan[levelCounter][i] = 1;
-    floorplanCount[levelCounter] += 1;
-  }
   return true;
 }
 
@@ -231,13 +177,44 @@ function ncount(level, i) {
 }
 
 function countLevels(structure) {
-  var levels = 0;
+  var levels = 1;
   for (var i = 0; i < structure.length; i++) {
     if (structure[i] == "Level") {
       levels++;
     }
   }
-  //levels = number of dividers + 1
-  levels++;
   return levels;
+}
+
+function printRooms() {
+  // draw grid lines 
+  for (var i = 0; i < numLevels; i++) {
+    var startWidth = 350*i;
+    var endWidth =  startWidth + 300;
+    var height = 300; 
+    for (var x = startWidth; x <= endWidth ; x += 30) {
+      for (var y = 0; y <= height; y += 30) {
+        stroke(0);
+        strokeWeight(1);
+        line(x, 0, x, height);
+        line(startWidth, y, endWidth, y);
+      }
+    }
+  } 
+  // draw rooms 
+  for (var i = 0; i < allRooms.length; i++) {
+    for (var j = 0; j < allRooms[i].length; j++) {
+      if (allRooms[i][j].used ==1) {
+        stroke(0);
+        fill(allRooms[i][j].colour());
+        //if its the first level ignore the front spacing 
+        if (i == 0) {
+          rect(30*(allRooms[i][j].floorplanIndex % 10), 30*floor((allRooms[i][j].floorplanIndex/10)), 30, 30);
+        }
+        else {
+          rect(350*i + 30*(allRooms[i][j].floorplanIndex % 10), 30*floor((allRooms[i][j].floorplanIndex/10)), 30, 30); 
+        }
+      }
+    }
+  }
 }
