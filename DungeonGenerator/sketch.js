@@ -8,7 +8,7 @@ var floorplan = []; // a global 2D array that stores the occupancy status {0,1} 
 var allRooms = []; // A global 2D array that stores the rooms (object) array for all levels
 var levels = []; // global 2D array that stores the string separated into levels and rooms 
 var numLevels = 0;
-var mission = "Start Room Room Enemy Level Room Key Room Room Level Room Room Lock Level Room Key Room Room Level Level Room Key Room Room Level Level Room Key Room Room Level Level Room Key Room Room Level Level Room Key Room Room Level Level Room Key Room Room Level Level Room Key Room Room Level End";
+var mission = "Start Room Room Enemy Level Room Key Room Room Level Room Key Room Room Level Room Key Room Room Room Key Room Room Level Room Key Room Room Level End";
 var levelCounter = 0; 
 
 class Room {
@@ -33,12 +33,11 @@ function preload() {
 }
 
 function setup() {
-  createCanvas(1500, 300);
-  background(220);
   structure = mission.split(' ');
   numLevels = countLevels(structure);
+  createCanvas(350*numLevels, 350);
+  background(220);
 
-  //split different levels into levels array
   var start = 0; 
   var count = 0; 
   for (var j = 0; j < structure.length; j++) {
@@ -134,7 +133,7 @@ function visit(i, first = false) {
   if (floorplanCount[levelCounter] >= levels[levelCounter].length) {
     return false;
   }
-  if (Math.random() < 0.40 && i != 45) {//<0.5
+  if (Math.random() < 0.40 && i != 45) { // adjust random parameter to be inversely proportional to numLevels
       return false;
   }
   cellQueue[levelCounter].push(i);
@@ -144,24 +143,6 @@ function visit(i, first = false) {
   floorplanCount[levelCounter] += 1;
   return true;
 }
-
-/* function create() {
-  if (levelCounter < levels.length && floorplanCount[levelCounter] < levels[levelCounter].length && cellQueue.length > 0) { //cellQueue.length > 0
-    var i = cellQueue.shift();
-    var x = i % 10;
-    var created  = false;
-    if (x > 1) {created = created | visit(i - 1);print("HI",levelCounter);}
-    if (x < 9) {created = created | visit(i + 1);print("HI",levelCounter);}
-    if (i > 20) {created = created | visit(i - 10);print("HI",levelCounter);}
-    if (i < 70) {created = created | visit(i + 10);print("HI",levelCounter);}
-    print(cellQueue.length);
-    if (!created) {
-      return false; 
-    }
-    return true;
-  }   
-  return false; 
-} */
 
 function nextLevel() {
   var previous = allRooms[levelCounter][floorplanCount[levelCounter]-1].floorplanIndex;
