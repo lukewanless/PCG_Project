@@ -8,6 +8,7 @@ var floorplan = []; // a global 2D array that stores the occupancy status {0,1} 
 var allRooms = []; // A global 2D array that stores the rooms (object) array for all levels
 var levels = []; // global 2D array that stores the string separated into levels and rooms 
 var numLevels = 0;
+var convergenceFactor = 0.60; 
 //var mission = "Start Room Room Enemy Room Key Room Room Level Room Key Room Key Room Room Level Room Key Room Room End";
 // 5 rooms/lvl = 3 Rooms in between level, then 8 room, then 13 room 
 //var mission = "Start Room Room Room Room Room Room Room End"; //1 lvl 
@@ -175,7 +176,7 @@ function visit(i, first = false) {
   if (floorplanCount[levelCounter] >= levels[levelCounter].length) {
     return false;
   }
-  if (Math.random() < 0.60 && i != 465) { // adjust random parameter to be inversely proportional to numLevels
+  if (Math.random() < convergenceFactor && i != 465) { // adjust random parameter to be inversely proportional to numLevels
       return false;
   }
   cellQueue[levelCounter].push(i);
