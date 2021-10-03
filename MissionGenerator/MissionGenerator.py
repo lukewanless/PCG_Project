@@ -81,7 +81,7 @@ class CFG(object):
 #Grammar Rules
 grammar = CFG()
 grammar.add_prod("Dungeon","Start Room Content Room End")
-grammar.add_prod("Content", "Content Key Content Lock Content | Enemy Room | Room Content | Room | Content Content")
+grammar.add_prod("Content", "Content Key Content Lock Content | Enemy Room | Room Content | Room | Content Content | Level")
 grammar.add_prod("","")
 
 #Rest of code, Alexander Gellel, u6048084, Australian National University
@@ -105,70 +105,6 @@ for i in range(number_to_generate):
 #    dungeons.append(theDungeon2)
 
 dungeon = max(dungeons, key=len)
-#random.choice(dungeons)
-#"Start Room Room Key Room Enemy Room Lock Enemy Room Room Enemy Room Key Room Lock Enemy Room Key Room Lock Key Enemy Room Lock Room End"
-
-
-
-import re
-from enum import Enum
-
-#-------------------------------------------------------------
-#The "chunk" and colours here were prototypes before the subsections were implemented in the Unity enviroment.
-#They served as a sample of how subsections of a dungeon would be broken down by a lock as their separating symbol
-#They have been left for reference
-class ColourEnum(Enum):
-    RED = 1
-    BLUE = 2
-    GREEN = 3
-    YELLOW = 4
-
-    def succ(self):
-        v = self.value + 1
-        if v > 4:
-            v = 1
-        return ColourEnum(v)
-
-    def pred(self):
-        v = self.value - 1
-        if v == 0:
-            v = 5
-        return ColourEnum(v)
-
-
-#Store ones in use here
-existingChunks = []
-
-class DungeonChunk:
-
-    bodyString = ""
-    colour = ColourEnum.RED
-
-    def __init__(self, dungeon, existing):
-        if "End" not in dungeon:
-            self.bodyString = dungeon #+ "Lock"
-        else:
-            self.bodyString = dungeon
-
-        if existing:
-            self.colour = ColourEnum.succ(existing[-1].colour)
-        else:
-            self.colour = ColourEnum.RED
-    
-    def display(self): 
-        print(str(self.bodyString)) 
-        print(repr(self.colour))
-
-#print("--------------------------------------")
-#print("Example break down")
-#for room in dungeon.split("Lock"):
-#    nextRoom = DungeonChunk(room, existingChunks)
-#    nextRoom.display()
-#    existingChunks.append(nextRoom)
-
-#-------------------------------------------------------------
-
-
 
 #---Auxialiary Functions----
 
@@ -193,10 +129,20 @@ def fitnessFunction(inputString):
     dungeonArray = inputString.split(' ')
     roomCount = len(dungeonArray)
     lockCount = dungeonArray.count("Lock")
+    
+    #Edit of code, Luke Wanless, u7120506, Australian National University (all following mentions of 'Level') 
+    levelCount = dungeonArray.count("Level")
+    
+    if levelCount == 0:
+        return score
 
     #Quality of number of locks. Protect against too big or too small
     if lockCount == 0:
         return score
+    
+     #Quality of number of levels as a percentage of the number of rooms 
+    if roomCount/levelCount < 20 and roomCount/levelCount > 10:
+        score = score + 10; 
 
     if lockCount > 2 and lockCount < 8:
         #Good range
@@ -215,6 +161,23 @@ def fitnessFunction(inputString):
         score = score + 5
     else: 
         score = score + 0.5
+   
+    #Level density/proximity
+    levelGaps = []
+    counter = 0
+    for entry in dungeonArray:
+        if entry == "Level":
+            levelGaps.append(counter)
+            counter = 0
+        else:
+            counter+=1
+
+    #The value assigned to the quality of level gaps        
+    levelGapValue =  (min(levelGaps)+1)
+    if levelCount >= 2:
+        levelGapValue2 = (second_smallest(levelGaps)+1)
+    else:
+        levelGapValue2 = 0
 
     #Lock density/proximity
     lockGaps = []
@@ -233,7 +196,7 @@ def fitnessFunction(inputString):
     else:
         lockGapValue2 = 0
 
-    score = score + lockGapValue + lockGapValue2 
+    score = score + lockGapValue + lockGapValue2 + levelGapValue + levelGapValue2
     return score
 
 

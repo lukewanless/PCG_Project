@@ -12,7 +12,10 @@ var numLevels = 0;
 // 5 rooms/lvl = 3 Rooms in between level, then 8 room, then 13 room 
 //var mission = "Start Room Room Room Room Room Room Room End"; //1 lvl 
 //var mission = "Start Room Room Room Room Room Room Room Level Room Room Room Room Room Room Room End"; //2lvl
-var mission = "Start Room Room Room Room Room Room Room Level Room Room Room Room Room Room Room Level Room Room Room Room Room Room Room End"; //3lvl 
+//var mission = "Start Room Room Room Room Room Room Room Level Room Room Room Room Room Room Room Level Room Room Room Room Room Room Room End"; //3lvl 
+//var mission =  "Start Room Room Key Room Room Room Room Enemy Room Lock Room Room Room Enemy Room Room Level Room Room Room Enemy Room Key Room Level Lock Enemy Room Room Room Room Key Room Lock Key Enemy Room Lock Room End";
+//var mission = 'Start Room Room Level Key Enemy Room Lock Room Room Enemy Room Level Room Room Key Enemy Room Lock Enemy Room Key Room Enemy Room Room Level Lock Room Enemy Room Room End '
+var mission = "Start Room Room Room Key Level Room Key Room Lock Room Enemy Room Room Enemy Room Key Enemy Room Lock Level Room Lock Enemy Room Enemy Room Room End"; 
 var levelCounter = 0; 
 var trials = 0; 
 
@@ -106,7 +109,7 @@ function draw() {
       append(restartStats,restartCount);
       if (trials < 10) {
         print(trials);
-        mouseClicked();
+        //mouseClicked();
       }
       if (trials == 10) {
         let sum = 0;
