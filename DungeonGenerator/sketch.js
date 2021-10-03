@@ -86,11 +86,10 @@ function draw() {
       if (i > 60) {created = created | visit(i - 30);}
       if (i < 780) {created = created | visit(i + 30);}
       if (!created && floorplanCount[levelCounter] < levels[levelCounter].length && floorplanCount[levelCounter] != 0) {
-        created = created | visit(allRooms[levelCounter][floorplanCount[levelCounter]-1].floorplanIndex -1) 
-                          | visit(allRooms[levelCounter][floorplanCount[levelCounter]-1].floorplanIndex +1)
-                          | visit(allRooms[levelCounter][floorplanCount[levelCounter]-1].floorplanIndex -30)
-                          | visit(allRooms[levelCounter][floorplanCount[levelCounter]-1].floorplanIndex +30);
-        //start();
+        created = created || visit(allRooms[levelCounter][floorplanCount[levelCounter]-1].floorplanIndex -1) 
+                          || visit(allRooms[levelCounter][floorplanCount[levelCounter]-1].floorplanIndex +1)
+                          || visit(allRooms[levelCounter][floorplanCount[levelCounter]-1].floorplanIndex -30)
+                          || visit(allRooms[levelCounter][floorplanCount[levelCounter]-1].floorplanIndex +30);
       }
       else if (!created && floorplanCount[levelCounter] < levels[levelCounter].length) {
         start();
