@@ -2,14 +2,11 @@
 
 const expect = require('chai').expect;
 
-
 // Create the variable you are going to test
 let p5js = 'awesome';
 
-
 // describe lets you comment on what this block of code is for.
-describe('these are my first tests for p5js', function() {
-
+describe('Testing number of restarts', function() {
 
   // it() lets you comment on what an individual test is about.
   it('should be a string', function(done) {
@@ -18,7 +15,6 @@ describe('these are my first tests for p5js', function() {
     // done tells the program the test is complete.
     done();
   });
-
 
   it('should be equal to awesome', function(done) {
     // This expect tests the value of the string.
