@@ -8,15 +8,18 @@ var floorplan = []; // a global 2D array that stores the occupancy status {0,1} 
 var allRooms = []; // A global 2D array that stores the rooms (object) array for all levels
 var levels = []; // global 2D array that stores the string separated into levels and rooms 
 var numLevels = 0;
-var mission = "Start Room Room Enemy Room Key Room Room Level Room Key Room Key Room Room Level Room Key Room Room End";
+//var mission = "Start Room Room Enemy Room Key Room Room Level Room Key Room Key Room Room Level Room Key Room Room End";
+// 5 rooms/lvl = 3 Rooms in between level, then 8 room, then 13 room 
+//var mission = "Start Room Room Room Room Room Room Room End"; //1 lvl 
+//var mission = "Start Room Room Room Room Room Room Room Level Room Room Room Room Room Room Room End"; //2lvl
+var mission = "Start Room Room Room Room Room Room Room Level Room Room Room Room Room Room Room Level Room Room Room Room Room Room Room End"; //3lvl 
 var levelCounter = 0; 
+var trials = 0; 
 
 //testing variables 
 var isFinished; 
 var restartCount; 
-var startTime;
-var endTime; 
-var generationTime; 
+var restartStats = [];
 
 
 class Room {
@@ -41,12 +44,13 @@ function preload() {
 }
 
 function setup() {
+  frameRate(10000);
   structure = mission.split(' ');
   numLevels = countLevels(structure);
-  createCanvas(350*numLevels, 350);
+  createCanvas(650*numLevels, 650);
   background(220);
-  var restartCount = 0; 
-  var isFinished = false; 
+  restartCount = 0; 
+  isFinished = false; 
   var start = 0; 
   var count = 0; 
   for (var j = 0; j < structure.length; j++) {
@@ -66,18 +70,25 @@ function draw() {
   textSize(14);
   if (!started) {
     textFont(font);
-    text(startText, 20, 150);
+    text(startText, 40, 250);
   }
   if (started) {
   if (levelCounter < levels.length && floorplanCount[levelCounter] < levels[levelCounter].length || cellQueue[levelCounter].length > 0) {
       var i = cellQueue[levelCounter].shift();
-      var x = i % 10;
+      var x = i % 30;
       var created  = false;
-      if (x > 1) {created = created | visit(i - 1);}
-      if (x < 9) {created = created | visit(i + 1);}
-      if (i > 20) {created = created | visit(i - 10);}
-      if (i < 70) {created = created | visit(i + 10);}
-      if (!created && floorplanCount[levelCounter] < levels[levelCounter].length) {
+      if (x > 3) {created = created | visit(i - 1);}
+      if (x < 27) {created = created | visit(i + 1);}
+      if (i > 60) {created = created | visit(i - 30);}
+      if (i < 780) {created = created | visit(i + 30);}
+      if (!created && floorplanCount[levelCounter] < levels[levelCounter].length && floorplanCount[levelCounter] != 0) {
+        created = created | visit(allRooms[levelCounter][floorplanCount[levelCounter]-1].floorplanIndex -1) 
+                          | visit(allRooms[levelCounter][floorplanCount[levelCounter]-1].floorplanIndex +1)
+                          | visit(allRooms[levelCounter][floorplanCount[levelCounter]-1].floorplanIndex -30)
+                          | visit(allRooms[levelCounter][floorplanCount[levelCounter]-1].floorplanIndex +30);
+        //start();
+      }
+      else if (!created && floorplanCount[levelCounter] < levels[levelCounter].length) {
         start();
       }
     }    
@@ -87,20 +98,31 @@ function draw() {
             && floorplanCount[levelCounter] == levels[levelCounter].length && levelCounter < levels.length-1) {
       nextLevel();
     }
-    printRooms();
-
-    //check to see if finished 
-    if (levelCounter == numLevels && allRooms[levelCounter][floorplanCount[levelCounter]-1].roomString == "End" && !isFinished) {
+   
+    else if (allRooms[levelCounter][floorplanCount[levelCounter]-1].roomString == "End" && !isFinished) {
       isFinished = true;
-      endTime = millis(); 
-      generationTime = endTime - startTime;
-      print(generationTime); 
+      trials++;
+      restartCount = restartCount-1; 
+      append(restartStats,restartCount);
+      if (trials < 10) {
+        print(trials);
+        mouseClicked();
+      }
+      if (trials == 10) {
+        let sum = 0;
+        for (let i = 0; i < restartStats.length; i++) {
+          sum += restartStats[i];
+        }
+        let average = sum / restartStats.length;
+        print(average)}; 
     }
+    printRooms();
   }
 }
 
 function mouseClicked() {
   background(220);
+  restartCount = 0;
   start();
 }
 
@@ -115,16 +137,12 @@ function start() {
   levelCounter = 0; 
 
   //testing variables 
-  if (restartCount == 0) {
-    startTime = millis();
-  }
   restartCount++;
   isFinished = false;  
 
-
   for (var i = 0; i < numLevels; i++) {
     floors = [];
-    for (var j = 0; j <= 100; j++) {
+    for (var j = 0; j <= 900; j++) {
       floors[j] = 0;
     }
     floorplan[i] = floors; 
@@ -137,13 +155,12 @@ function start() {
     floorplanCount[i] = 0; 
     cellQueue[i] = [];
   }
-  visit(45); 
+  visit(465); 
 }
 
 function visit(i, first = false) {
   if (first) {
     levelCounter++;
-    created = true;
   }
   if (floorplan[levelCounter][i]) {
     return false;
@@ -155,7 +172,7 @@ function visit(i, first = false) {
   if (floorplanCount[levelCounter] >= levels[levelCounter].length) {
     return false;
   }
-  if (Math.random() < 0.40 && i != 45) { // adjust random parameter to be inversely proportional to numLevels
+  if (Math.random() < 0.60 && i != 465) { // adjust random parameter to be inversely proportional to numLevels
       return false;
   }
   cellQueue[levelCounter].push(i);
@@ -168,12 +185,11 @@ function visit(i, first = false) {
 
 function nextLevel() {
   var previous = allRooms[levelCounter][floorplanCount[levelCounter]-1].floorplanIndex;
-  //levelCounter++;
   visit(previous, true);
 }
 
 function ncount(level, i) {
-  return floorplan[level][i-10] + floorplan[level][i+10] +
+  return floorplan[level][i-30] + floorplan[level][i+30] +
         floorplan[level][i-1] + floorplan[level][i+1];
 }
 
@@ -188,11 +204,11 @@ function countLevels(structure) {
 function printRooms() {
   // draw grid lines 
   for (var i = 0; i < numLevels; i++) {
-    var startWidth = 350*i;
-    var endWidth =  startWidth + 300;
-    var height = 300; 
-    for (var x = startWidth; x <= endWidth ; x += 30) {
-      for (var y = 0; y <= height; y += 30) {
+    var startWidth = 650*i;
+    var endWidth =  startWidth + 600;
+    var height = 600; 
+    for (var x = startWidth; x <= endWidth ; x += 20) {
+      for (var y = 0; y <= height; y += 20) {
         stroke(0);
         strokeWeight(1);
         line(x, 0, x, height);
@@ -207,10 +223,10 @@ function printRooms() {
         stroke(0);
         fill(allRooms[i][j].colour()); 
         if (i == 0) {
-          rect(30*(allRooms[i][j].floorplanIndex % 10), 30*floor((allRooms[i][j].floorplanIndex/10)), 30, 30);
+          rect(20*(allRooms[i][j].floorplanIndex % 30), 20*floor((allRooms[i][j].floorplanIndex/30)), 20, 20);
         }
         else {
-          rect(350*i + 30*(allRooms[i][j].floorplanIndex % 10), 30*floor((allRooms[i][j].floorplanIndex/10)), 30, 30); 
+          rect(650*i + 20*(allRooms[i][j].floorplanIndex % 30), 20*floor((allRooms[i][j].floorplanIndex/30)), 20, 20); 
         }
       }
     }
