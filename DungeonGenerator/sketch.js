@@ -9,14 +9,10 @@ var allRooms = []; // A global 2D array that stores the rooms (object) array for
 var levels = []; // global 2D array that stores the string separated into levels and rooms 
 var numLevels = 0;
 var convergenceFactor = 0.60; 
-//var mission = "Start Room Room Enemy Room Key Room Room Level Room Key Room Key Room Room Level Room Key Room Room End";
-// 5 rooms/lvl = 3 Rooms in between level, then 8 room, then 13 room 
-//var mission = "Start Room Room Room End"; //1 lvl 
-//var mission = "Start Room Room Room Level Room Room Room End"; //2lvl
-var mission = "Start Room Room Room End"; //3lvl 
-//var mission =  "Start Room Room Key Room Room Room Room Enemy Room Lock Room Room Room Enemy Room Room Level Room Room Room Enemy Room Key Room Level Lock Enemy Room Room Room Room Key Room Lock Key Enemy Room Lock Room End";
+//var mission =  "Start Room Room Key Room Room Room Room Enemy Room Lock Room Room Room Enemy Room Room Room Room Room Enemy Room Key Room Lock Enemy Room Room Room Room Key Room Lock Key Enemy Room Lock Room End";
 //var mission = 'Start Room Room Level Key Enemy Room Lock Room Room Enemy Room Level Room Room Key Enemy Room Lock Enemy Room Key Room Enemy Room Room Level Lock Room Enemy Room Room End '
 //var mission = "Start Room Room Room Key Level Room Key Room Lock Room Enemy Room Room Enemy Room Key Enemy Room Lock Level Room Lock Enemy Room Enemy Room Room End"; 
+var mission = "Start Room Room Enemy Room Enemy Room Key Enemy Room Room Enemy Room Lock Enemy Room Level Room Key Room Lock Room Level Room Room Room Enemy Room Key Enemy Room Lock End";
 var levelCounter = 0; 
 var trials = 0; 
 
@@ -109,8 +105,8 @@ function draw() {
       restartCount = restartCount-1; 
       append(restartStats,restartCount);
       if (trials < 100) {
-        print(trials);
-        mouseClicked(); //uncomment for automated testing open up javaScript console in chrome to see average 
+        //print(trials);
+        //mouseClicked(); //uncomment for automated testing open up javaScript console in chrome to see average 
       }
       if (trials == 100) {
         let sum = 0;
