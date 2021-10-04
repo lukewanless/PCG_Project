@@ -11,6 +11,7 @@ startTime = datetime.now()
 
 
 number_to_generate = int(input("How many Missions would you like to Generate? "))
+#number_to_generate = int(10000)
 
 #------------------------------------------------------------------------------------------------------------------------------------
 # Grammar class and methods are the work of Eli Bendersky, January 2010
@@ -219,4 +220,4 @@ for dungeonX in scoredList[:5]:
     print(dungeonX)
 
 
-#print(datetime.now() - startTime) #Uncomment to print runtime
+print(datetime.now() - startTime) #Uncomment to print runtime
